@@ -4,50 +4,42 @@
 #include "utility/concepts.hpp"
 #include "wrapper/fwd.hpp"
 
-namespace mvk::wrapper
-{
-  namespace storage
-  {
-    struct handle_only
-    {};
+namespace mvk::wrapper {
+namespace storage {
+struct handle_only {};
 
-  }  // namespace storage
+} // namespace storage
 
-  template< typename Handle >
-  class handle_only
-  {
-  public:
-    using handle_type = Handle;
+template <typename Handle> class handle_only {
+public:
+  using handle_type = Handle;
 
-    constexpr handle_only() noexcept = default;
+  constexpr handle_only() noexcept = default;
 
-    template< typename HandleArg >
-    requires utility::not_this< Handle, handle_only >
-    constexpr handle_only( HandleArg && handle ) noexcept : handle_( std::forward< HandleArg >( handle ) ) {}
+  template <typename HandleArg>
+  requires utility::not_this<Handle, handle_only>
+  constexpr handle_only(HandleArg &&handle) noexcept
+      : handle_(std::forward<HandleArg>(handle)) {}
 
-    [[nodiscard]] constexpr handle_type const & get() const noexcept
-    {
-      return handle_;
-    }
-
-    [[nodiscard]] constexpr handle_type & get() noexcept
-    {
-      return handle_;
-    }
-
-  private:
-    handle_type handle_;
-  };
-
-  template< typename... Args >
-  constexpr auto storage_selector( [[maybe_unused]] storage::handle_only option ) noexcept
-  {
-    using handle = decltype( select< options::handle >( Args{}... ) );
-    static_assert( !utility::is_none( handle{} ), "Expected handle option" );
-
-    return selected< handle_only< handle > >{};
+  [[nodiscard]] constexpr handle_type const &get() const noexcept {
+    return handle_;
   }
 
-}  // namespace mvk::wrapper
+  [[nodiscard]] constexpr handle_type &get() noexcept { return handle_; }
+
+private:
+  handle_type handle_;
+};
+
+template <typename... Args>
+constexpr auto
+storage_selector([[maybe_unused]] storage::handle_only option) noexcept {
+  using handle = decltype(select<options::handle>(Args{}...));
+  static_assert(!utility::is_none(handle{}), "Expected handle option");
+
+  return selected<handle_only<handle>>{};
+}
+
+} // namespace mvk::wrapper
 
 #endif
